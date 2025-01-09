@@ -7,6 +7,10 @@ import dotenv from "dotenv";
 import { DB_NAME } from "./constants.js";
 import { VerifyToken } from "./middleware/auth.js";
 import { createVideo } from "./controller/video.controller.js";
+import { createComment,
+    getComments
+
+ } from "./controller/comment.controller.js";
 
 import { upload } from "./middleware/multer.js";
 
@@ -66,6 +70,10 @@ app.route('/api/upload').post(
         }
     ]),
     createVideo)
+
+app.route('/api/:video/comment').post(createComment)  
+
+app.route('/api/:video/getcomment').get(getComments)
 
 
 

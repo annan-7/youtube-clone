@@ -49,4 +49,40 @@ const createVideo= asyncHandler(async(req, res)=>{
     
 })
 
+const getVideos = asyncHandler(async(req, res)=>{
+    
+    try {
+        const videos = await Video.find({})
+
+        return res.status(200).json(
+            new ApiResponse(200, "Videos fetched successfully", videos)
+        )
+    } catch (error) {
+        throw new ApiError(500, "Error fetching all videos")
+        
+    }
+
+    
+
+})
+
+const GetVideoByGenre = asyncHandler(async(req, res)=>{
+
+    const {genre} = req.params;
+
+    try {
+        const videos = await Video.find({genre})
+        if(!videos){
+            throw new ApiError(404, "No video found")
+        }
+        return res.status(200).json(
+            new ApiResponse(200, "Videos fetched successfully", videos))
+    } catch (error) {
+        throw new ApiError(500, "Error fetching videos by genre")
+    }
+})
+
+
+
+
 export {createVideo}

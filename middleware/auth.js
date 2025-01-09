@@ -18,6 +18,7 @@ export const VerifyToken = asyncHandler(async(req, res, next)=>{
         }
         req.user = user;
         next()
+        
 
         return res.status(200).json(
             new ApiResponse(200, decodedToken, "Token Verified Successfully")
