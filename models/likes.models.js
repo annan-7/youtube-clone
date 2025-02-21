@@ -1,22 +1,29 @@
 import mongoose,{Schema} from "mongoose";
-import { User } from "./user.models.js";
 import { Video } from "./video.models.js";
-import { Comment } from "./comments.models";
+import { User } from "./user.models.js";
+import { Comment } from "./comments.models.js";
+
 
 const LikeSchema = new Schema({
-  comment:{
-    type: Schema.Types.ObjectId,
-    ref: 'Comment'
-  },
   video:{
     type: Schema.Types.ObjectId,
-    ref: 'Video'
+    ref:"Video",
+    default:null
   },
-  likedBy:{
-    type: Schema.Types.ObjectId,
-    ref: 'User'
-  }
+  user:{
+    type:Schema.Types.ObjectId,
+    ref:"User",
+    required:true
+    
+  },
+  commentId:{
+    type:Schema.Types.ObjectId,
+    ref:"Comment",
+    default:null
+  },
 
 },{timestamps:true});
+
+
 
 export const Like = mongoose.model('Like',LikeSchema);

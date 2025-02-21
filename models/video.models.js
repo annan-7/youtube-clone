@@ -1,5 +1,6 @@
 
 import mongoose, {Schema} from "mongoose";
+import { User } from "./user.models.js";
 
 const videoSchema = new Schema({
     title:{
@@ -20,7 +21,13 @@ const videoSchema = new Schema({
     ThumbnailUrl:{
         type: String,
         required: true
+    },
+    Owner:{
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     }
+
 
 
 },{ timestamps: true})

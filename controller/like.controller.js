@@ -2,78 +2,114 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Like } from "../models/likes.models.js";
-import { Video } from "../models/video.models.js";
 
-const likeVideo = asyncHandler(async(req,res) =>{
-    const {video} = req.params;
-    const {user} = req.user;
-    
-    if ( !video){
-        throw new ApiError(400, "Comment is required")
-        
-    }
+import { Comment } from "../models/comments.models.js";
+import { Video} from "../models/video.models.js";
 
-    const videoExist = await Video.findById(video);
-    if(!videoExist){
-        throw new ApiError(404, "Video not found or has been deleted")
-    }
 
-    const likeExist = await Like.findOne({video, likedBy: user._id});
+const likeDislikeVideo = asyncHandler(async(req, res)=>{
+  const {videoId} = req.params;
+  const likedBy = req.user?._id;
+  if (!likedBy) {
+    throw new ApiError(401, "Unauthorized: User not authenticated");
+  }
+  console.log("info",likedBy, videoId)
+  //So i am getting the videoId from the params and the likedBy from the middleware 
 
-    if(likeExist){
-        await Like.findByIdAndDelete(likeExist._id);
-        return res.status(200).json(
-            new ApiResponse(200, "Video unliked successfully", null)
-        )
-    }
+  const video = await Video.findById(videoId);
+  
 
-    const newlike = await Like.create({
-        video,
-        likedBy: user._id,
+  if(!video){
+    throw new ApiError(404, "Video not found or has been deleted")
+  }
+  const alreadyLiked = await Like.findOne({
+    video:videoId,
+    user:likedBy
+  })
+  if (alreadyLiked){
+    await Like.findOneAndDelete({
+      video:videoId,
+      user:likedBy
     })
-
+    return res.status(200).json(
+      new ApiResponse(200, { isliked: false}, "Video unliked successfully")
+    )
+  }else{
+    const like = await Like.create({
+      video:videoId,
+      user:likedBy
+    })
+    if(!like){
+      throw new ApiError(500, "Failed to like video")
+    }
+    
 
     return res.status(200).json(
-        new ApiResponse(200, "Video liked successfully", newlike)
+      new ApiResponse(200, {isliked: true , }, "Video liked successfully")
     )
+  }
 
-    
 })
+const likeDislikeVideoStatus = asyncHandler(async(req, res)=>{
+  try {
+    const {videoId} = req.params;
+    const userId = req.user._id; // From authentication middleware
+    
+    // Check if user has liked the video
+    const existingReaction = await Like.findOne({
+      video: videoId,
+      user: userId
+    }).lean();
 
-const likeComment = asyncHandler(async(req,res)=>{
-    const {comment} = req.params;
-    const {user}= req.user;
+    // Get total likes count
+    const likeCount = await Like.countDocuments({video: videoId}).lean();
+    const isLiked = !!existingReaction;
 
-    if(!comment){
-        throw new ApiError(400, "Comment is required")
-    }
+    res.status(200).json(
+      new ApiResponse(200,{isLiked,likeCount},"Like status retrieved"
+   ));
 
-    const commentExist = await Comment.findById(comment);
-    if (!commentExist){
-        throw new ApiError(404, "Comment not found  or has been deleted")
-    }
+  } catch (error) {
+    res.status(500).json(
+      new ApiResponse(500, null, "Failed to retrieve like status")
+    );
+  }
 
-    const likeExist = await Like.findOne({comment, likedBy: user._id});
+})
+const likeDislikeComment = asyncHandler(async(req, res)=>{
+  const {commentId} = req.params;
 
-    if (likeExist){
-        await Like.findByIdAndDelete(likeExist._id);
-        return res.status(200).json(
-            new ApiResponse(200, "Comment unliked successfully", null)
-        )
-    }
+  const comment = await Comment.findById(commentId);
 
-    const newlike = await Like.create({
-        comment,
-        likedBy: user._id,
+  if(!comment){
+    throw new ApiError(404, "Comment not found or has been deleted")
+  }
+  const alreadyLiked = await Like.findOne({
+    commentId,
+    likedBy : req.user?._id
+  })
+  if (alreadyLiked){
+    await Like.findOneAndDelete({
+      commentId,
+      likedBy: req.user?._id
     })
-
     return res.status(200).json(
-         new ApiResponse(200,"Comment liked successfully", newlike)
+      new ApiResponse(200, { isliked: false}, "Comment unliked successfully")
     )
+  }else{
+    const like = await Like.create({
+      commentId,
+      likedBy: req.user?._id
+    })
+    return res.status(200).json(
+      new ApiResponse(200, {isliked: true}, "Comment liked successfully")
+    )
+  }
 
 })
 
 export {
-    likeVideo,
-    likeComment
+    likeDislikeVideo,
+    likeDislikeVideoStatus,
+    likeDislikeComment
 }

@@ -26,8 +26,14 @@ const userSchema = new Schema({
         required: true,
 
     },
+    profilePicture:{
+        type: String,
+        default: "https://res.cloudinary.com/djnsj8wlq/image/upload/v1739838167/user_1_qg6o9g.png"
+    },
+
     refreshToken:{
         type: String,
+        default: ""
         
     }
 })

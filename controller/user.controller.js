@@ -1,9 +1,10 @@
-import {json} from "express";
+
 import {User} from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import jwt from "jsonwebtoken";
+
+
 
 
 const GenerateAccessandRefreshTokens= async(userid)=>{
@@ -11,6 +12,8 @@ const GenerateAccessandRefreshTokens= async(userid)=>{
         const user = await User.findById(userid)
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
+
+        
     
     
         user.refreshToken = refreshToken;
@@ -28,7 +31,7 @@ const GenerateAccessandRefreshTokens= async(userid)=>{
 }
 
 const registerUser = asyncHandler(async(req, res)=>{
-    console.log("Data received", req.body)
+    
     const {fullname,username, email , password} = req.body;
 
     //checking
@@ -53,7 +56,7 @@ const registerUser = asyncHandler(async(req, res)=>{
         password
     })
 
-    const createdUser = await User.findById(user._id).select("-password")
+    const createdUser = await User.findById(user._id).select("-password").lean();
 
     return res.status(200).json(
        new ApiResponse(200,"USER CREATED SUCCESSFULLY", createdUser)
@@ -66,6 +69,7 @@ const registerUser = asyncHandler(async(req, res)=>{
 
 
 const loginUser = asyncHandler(async(req ,res )=>{
+    
     const {email, password}= req.body;
     
     if([email, password].some((field)=> field.trim()==="")){
@@ -84,21 +88,30 @@ const loginUser = asyncHandler(async(req ,res )=>{
     }
     
     
-    const {accessToken, refreshToken} = await GenerateAccessandRefreshTokens(user._id);
+    const {
+        accessToken, 
+        refreshToken,
+        
+    } = await GenerateAccessandRefreshTokens(user._id);
 
 
-    const LoggedInUser = await User.findOne({email}).select("-password -refreshToken")
+    const LoggedInUser = await User.findOne({email}).select("-password -refreshToken").lean();
 
     const options ={
         httpOnly: true,
-        secure: true
+        
     }
-    return res.status(200).cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-   .json(
-        new ApiResponse(200,{user: LoggedInUser, accessToken , refreshToken}, "User logged in successfully")
+    return res.status(200).cookie("accessToken",accessToken,options)
+    .cookie("refreshToken", refreshToken,options)
+    .json(
+        new ApiResponse(200, {
+            user: LoggedInUser, accessToken , refreshToken
+        },
+        "User logged in successfully"
+    )
     )
 
+    
 
     
 })
@@ -108,7 +121,7 @@ const LogOut = asyncHandler(async(req, res)=>{
         req.user._id,
         {
             $unset: {
-                refreshToken: 1
+                refreshToken: ""
             }
         },
         {
@@ -118,7 +131,7 @@ const LogOut = asyncHandler(async(req, res)=>{
 
     const options ={
         httpOnly: true,
-        secure: true
+        secure: false //change to true in production
     }
     return res.status(200)
     .clearCookie("accessToken", accessToken, options)
@@ -128,4 +141,39 @@ const LogOut = asyncHandler(async(req, res)=>{
     )
 })
 
-export {registerUser, loginUser, GenerateAccessandRefreshTokens, LogOut}
+const Session = asyncHandler(async (req, res) => {
+    // Return the user information from the request
+    
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          isAuthenticated: true,
+          user: req.user?._id
+        },
+        "Session verified successfully"
+      )
+    );
+});
+const NoSession = asyncHandler(async (req, res) => {
+    // Return an empty user object
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          isAuthenticated: false,
+          user: null
+        },
+        "No session found"
+      )
+    );
+});
+const profile = asyncHandler(async(req, res)=>{
+    const user = req.user;
+    
+    
+    return res.status(200).json(
+        new ApiResponse(200, user, "User profile fetched successfully")
+    )
+})
+export {registerUser, loginUser, GenerateAccessandRefreshTokens, LogOut, Session, NoSession,profile}

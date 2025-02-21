@@ -1,19 +1,20 @@
 import express from "express"
-import {registerUser, loginUser, LogOut} from "./controller/user.controller.js"
+import {registerUser, loginUser, LogOut, Session, NoSession, profile} from "./controller/user.controller.js"
 import connectDB from "./Db/db_connection.js"
 import cors from "cors"
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { DB_NAME } from "./constants.js";
-import { VerifyToken } from "./middleware/auth.js";
-import { createVideo } from "./controller/video.controller.js";
+import { VerifyJwt, GetLoggedInOrIngnore } from "./middleware/auth.js";
+import { createVideo,GetAllVideos,GetVideoID, VideoUser } from "./controller/video.controller.js";
 import { createComment,
     getComments
 
  } from "./controller/comment.controller.js";
 
 import { upload } from "./middleware/multer.js";
-
+import { likeDislikeVideo, likeDislikeComment, likeDislikeVideoStatus } from "./controller/like.controller.js";
+import authMiddleware from "./middleware/authication_try.js";
 dotenv.config({ path:'.env' });
 
 const app = express()
@@ -41,6 +42,12 @@ connectDB().then(()=>{
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
+app.use((err, req, res, next) => {
+    console.error('Global Error:', err);
+    res.status(err.statusCode || 500).json({
+      error: err.message || 'Internal Server Error'
+    });
+  });
 
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
@@ -56,7 +63,7 @@ app.route('/api/register').post(registerUser)
 
 app.route('/api/login').post(loginUser)
 
-app.route('/api/logout').get(LogOut, VerifyToken)
+app.route('/api/logout').delete(LogOut)
 
 app.route('/api/upload').post(
     upload.fields([
@@ -68,12 +75,27 @@ app.route('/api/upload').post(
             name: "thumbnail",
             maxCount:1
         }
-    ]),
+    ]),VerifyJwt,
     createVideo)
 
 app.route('/api/:video/comment').post(createComment)  
 
 app.route('/api/:video/getcomment').get(getComments)
+
+app.route('/api/allvideos').get(GetAllVideos)
+
+app.route('/api/videos/:id').get(GetVideoID)
+app.route('/api/:id/user').get(VideoUser)
+
+app.route('/api/:videoId/reaction').post(VerifyJwt, likeDislikeVideo)
+
+app.route('/api/:videoId/reaction/status').get(VerifyJwt,likeDislikeVideoStatus)
+
+app.route('/api/auth/session').get(GetLoggedInOrIngnore, Session)
+
+app.route('/api/auth/nosession').get(NoSession)
+
+app.route('/api/profile').get(VerifyJwt, profile)
 
 
 
