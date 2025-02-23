@@ -3,7 +3,8 @@ import {User} from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import {Passport} from "passport"
+import {Strategy} from "passport-google-oauth20"
 
 
 
@@ -176,4 +177,5 @@ const profile = asyncHandler(async(req, res)=>{
         new ApiResponse(200, user, "User profile fetched successfully")
     )
 })
+
 export {registerUser, loginUser, GenerateAccessandRefreshTokens, LogOut, Session, NoSession,profile}

@@ -3,7 +3,12 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary_config.js";
+
 import { User } from "../models/user.models.js";
+import { videoQuality } from "../models/video-quality.models.js";
+import { upload } from "../utils/cloudinaryAllUpload.js";
+import fs from "fs"
+
 
 
 const createVideo= asyncHandler(async(req, res)=>{
@@ -133,8 +138,116 @@ const VideoUser = asyncHandler(async(req, res)=>{
         new ApiResponse(200, user, "User fetched from video")
     )
 })
+const VideoQua = asyncHandler(async(req, res)=>{
+    const videolocal = req.files?.['video']?.[0]?.path;
+    const thumbnailLocalPath = req.files?.['thumbnail']?.[0]?.path;
+    
+    try {
+        if(!videolocal || !thumbnailLocalPath ){
+            throw new ApiError(400, "Please upload your video or Thumbnail ")
+        }
+
+        
+        const option360= {
+            transformation: [
+               { width: 640, height: 360, crop: "scale" }, 
+               { quality: "auto" },
+               { bit_rate: "500k" }, 
+               { format: "mp4", video_codec: "h264" } 
+           ]
+       }
+       
+       const option720 = {
+           transformation: [
+               { width: 1280, height: 720, crop: "scale" }, 
+               { quality: "auto" },
+               { bit_rate: "1500k" }, 
+               { format: "mp4", video_codec: "h264" }
+           ]
+       }
+       
+       const option1080 = {
+           transformation: [
+               { width: 1920, height: 1080, crop: "scale" }, 
+               { quality: "auto" }, 
+               { bit_rate: "3000k" }, 
+               { format: "mp4", video_codec: "h264" }
+             ]
+       }
+       
+       
+       
+       const [UploadVideo360, UploadVideo720, UploadVideo1080] = await Promise.all([
+        uploadOnCloudinary(videolocal, option360),
+        uploadOnCloudinary(videolocal, option720),
+        uploadOnCloudinary(videolocal, option1080),
+        
+
+       ])
+       const UploadThumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+       if(!UploadVideo360 || !UploadVideo720 || !UploadVideo1080 ){
+           throw new ApiError(500, "Error uploading video")
+       }
+       const video = await  videoQuality.create({
+        url_360 : UploadVideo360.url,
+        url_720 : UploadVideo720.url,
+        url_1080 : UploadVideo1080.url,
+        thumbnail : UploadThumbnail.url
+
+       })
+       await video.save();
+
+       fs.unlinkSync(videolocal,thumbnailLocalPath)
+       
+       
+       
+
+       
+       
+       
+    
+         
+        return res.status(200).json(
+            new ApiResponse(200, video, "Video uploaded Successfully" )
+        )
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json(
+            new ApiResponse(500, null, "Error uploading video" )
+        )
+    }
+        
+    
+    
+})
+
+const GetVideoQuality = asyncHandler(async(req, res)=>{
+    try {
+        const videos = await videoQuality.find({});
+
+    return res.status(200).json(
+        new ApiResponse(200, videos, "Fetched Video Quality Successfully")
+    )
+    } catch (error) {
+        return res.status(500).json(
+            new ApiResponse(500, null, "Failed to Fetch Video Quality")
+        )
+    }
+    
+})
+    
+
+/*const VideoQua = asyncHandler(async(req, res)=>{
+    const video = req.files?.['video']?.[0]?.path;
+    if(!video){
+        throw new ApiError(400, "Please upload your video")
+    }
+    const videoUpload = await upload(video);
+    return res.status(200).json(
+        new ApiResponse(200, videoUpload, "Video uploaded successfully")
+    )
+})
+*/
 
 
-
-
-export {createVideo, GetVideoID, GetAllVideos, VideoUser};
+export {createVideo, GetVideoID, GetAllVideos, VideoUser, VideoQua, GetVideoQuality};

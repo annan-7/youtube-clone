@@ -14,21 +14,25 @@ cloudinary.config({
 
 
 
-const uploadOnCloudinary = async (FilePath) => {
-    // Use the uploaded file's name as the asset's public ID and 
-    // allow overwriting the asset with new versions
+const uploadOnCloudinary = async (FilePath,options = {}) => {
+    
     try {
       if(!FilePath) return null;
       // Upload the image
-      const result = await cloudinary.uploader.upload(FilePath,{ resource_type:'auto'});
-      console.log(result)
+      const result = await cloudinary.uploader.upload(FilePath,{
+        resource_type: "auto",
+        ...options
+      });
       
-      fs.unlinkSync(FilePath)
+      
+      
 
       return result;
+      
 
     } catch (error) {
-      fs.unlinkSync(FilePath)
+      
+      console.log(error);
       return null;
     }
 };

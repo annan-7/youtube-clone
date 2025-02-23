@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { DB_NAME } from "./constants.js";
 import { VerifyJwt, GetLoggedInOrIngnore } from "./middleware/auth.js";
-import { createVideo,GetAllVideos,GetVideoID, VideoUser } from "./controller/video.controller.js";
+import { createVideo,GetAllVideos,GetVideoID, VideoUser,VideoQua , GetVideoQuality} from "./controller/video.controller.js";
 import { createComment,
     getComments
 
@@ -97,7 +97,18 @@ app.route('/api/auth/nosession').get(NoSession)
 
 app.route('/api/profile').get(VerifyJwt, profile)
 
-
+app.route('/api/videoQuality').post(
+    upload.fields([
+        {
+            name: "video",
+            maxCount: 1
+        },{
+            name: "thumbnail",
+            maxCount: 1
+        }
+    ]),VideoQua    
+)
+app.route('/api/get-video-quality').get(GetVideoQuality)
 
 
 
