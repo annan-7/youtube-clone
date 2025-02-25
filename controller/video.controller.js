@@ -141,6 +141,8 @@ const VideoUser = asyncHandler(async(req, res)=>{
 const VideoQua = asyncHandler(async(req, res)=>{
     const videolocal = req.files?.['video']?.[0]?.path;
     const thumbnailLocalPath = req.files?.['thumbnail']?.[0]?.path;
+    const {title, description} = req.body;
+    const user = req.user._id;
     
     try {
         if(!videolocal || !thumbnailLocalPath ){
@@ -192,7 +194,10 @@ const VideoQua = asyncHandler(async(req, res)=>{
         url_360 : UploadVideo360.url,
         url_720 : UploadVideo720.url,
         url_1080 : UploadVideo1080.url,
-        thumbnail : UploadThumbnail.url
+        thumbnail : UploadThumbnail.url,
+        title,
+        description,
+        Owner:user
 
        })
        await video.save();
