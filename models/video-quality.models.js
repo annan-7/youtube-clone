@@ -1,14 +1,21 @@
 import mongoose,{Schema} from "mongoose";
 
 const videoQualitySchema = new Schema({
-    
+    title:{
+        type: String,
+        required:true
+    },
+    description:{
+        type: String,
+        default:""
+    },
     url_360:{
         type: String,
         default:""
     },
    url_720:{
     type: String,
-    default:""
+    required: true
 
    },
    url_1080:{
@@ -18,6 +25,10 @@ const videoQualitySchema = new Schema({
    thumbnail:{
     type: String,
     default:""
+   },
+   Owner:{
+    type: Schema.Types.ObjectId,
+    ref:"User"
    }
 },{timestamps:true})
 

@@ -97,7 +97,7 @@ app.route('/api/auth/nosession').get(NoSession)
 
 app.route('/api/profile').get(VerifyJwt, profile)
 
-app.route('/api/videoQuality').post(
+app.route('/api/UploadvideoQuality').post(
     upload.fields([
         {
             name: "video",
@@ -106,7 +106,7 @@ app.route('/api/videoQuality').post(
             name: "thumbnail",
             maxCount: 1
         }
-    ]),VideoQua    
+    ]),VerifyJwt,VideoQua    
 )
 app.route('/api/get-video-quality').get(GetVideoQuality)
 
