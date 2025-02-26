@@ -38,12 +38,14 @@ app.use(express.urlencoded({extended: true, limit: "16kb"}));
 app.use(express.static("public"));
 app.use(cookieParser())
 
+const port = process.env.PORT ;
+
 connectDB().then(()=>{
-    if(process.env.NODE_ENV !== "production"){
-        app.listen(process.env.PORT, ()=>{
-            console.log(`server at http://localhost:${process.env.PORT}`)
+    
+    app.listen(port, ()=>{
+        console.log(`server at http://localhost:${port}`)
         })
-    }
+    
     
 })
 .catch((err)=> console.log(err))
@@ -63,11 +65,8 @@ app.get('/api', (req, res) => {
 })
 
 
-//app.route().post(registerUser)
-//app.post('/api/register', registerUser)
-app.post('/api/register', (req, res)=>{
-    res.status(200).json({ success: "Test route works!" });
-})
+app.route().post(registerUser)
+
 
 app.route('/api/login').post(loginUser)
 
