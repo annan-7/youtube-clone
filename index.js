@@ -3,7 +3,7 @@ import {registerUser, loginUser, LogOut, Session, NoSession, profile} from "./co
 import connectDB from "./Db/db_connection.js"
 import cors from "cors"
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
+
 import { DB_NAME } from "./constants.js";
 import { VerifyJwt, GetLoggedInOrIngnore } from "./middleware/auth.js";
 import { createVideo,GetAllVideos,GetVideoID, VideoUser,VideoQua , GetVideoQuality} from "./controller/video.controller.js";
@@ -15,13 +15,17 @@ import { createComment,
 import { upload } from "./middleware/multer.js";
 import { likeDislikeVideo, likeDislikeComment, likeDislikeVideoStatus } from "./controller/like.controller.js";
 import authMiddleware from "./middleware/authication_try.js";
-
+ 
 
 const app = express()
+
+import dotenv from "dotenv";
+dotenv.config({ path:'./env' });
+
 const port = process.env.PORT;
 
 
-dotenv.config({ path:'./env' });
+
 
 app.use(cors({
     origin: process.env.CORS_ORIGEN,
@@ -54,12 +58,13 @@ app.use((err, req, res, next) => {
 
 
 
-app.get('/api/port', (req, res) => {
-    console.log(process.env.PORT)
+app.get('/api', (req, res) => {
+    res.send('Api is running')
 })
 
 
-app.route('/api/register').post(registerUser)
+//app.route().post(registerUser)
+app.post('/api/register', registerUser)
 
 app.route('/api/login').post(loginUser)
 
