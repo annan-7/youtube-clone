@@ -18,7 +18,8 @@ import authMiddleware from "./middleware/authication_try.js";
 dotenv.config({ path:'.env' });
 
 const app = express()
-const port = process.env.PORT
+const port = process.env.PORT;
+
 
 dotenv.config({ path:'./env' });
 
