@@ -22,7 +22,7 @@ const app = express()
 import dotenv from "dotenv";
 dotenv.config({ path:'./env' });
 
-const port = process.env.PORT;
+
 
 
 
@@ -40,8 +40,8 @@ app.use(cookieParser())
 
 connectDB().then(()=>{
     if(process.env.NODE_ENV !== "production"){
-        app.listen(port, ()=>{
-            console.log(`server at http://localhost:${port}`)
+        app.listen(process.env.PORT, ()=>{
+            console.log(`server at http://localhost:${process.env.PORT}`)
         })
     }
     
