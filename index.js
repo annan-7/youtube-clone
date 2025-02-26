@@ -43,11 +43,9 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 app.use((err, req, res, next) => {
-    console.error('Global Error:', err);
-    res.status(err.statusCode || 500).json({
-      error: err.message || 'Internal Server Error'
-    });
-  });
+    console.error(err.stack);
+    res.status(500).json({ error: 'Internal Server Error' });
+});
 
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
