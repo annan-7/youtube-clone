@@ -15,7 +15,7 @@ import { createComment,
 import { upload } from "./middleware/multer.js";
 import { likeDislikeVideo, likeDislikeComment, likeDislikeVideoStatus } from "./controller/like.controller.js";
 import authMiddleware from "./middleware/authication_try.js";
-dotenv.config({ path:'.env' });
+
 
 const app = express()
 const port = process.env.PORT;
