@@ -60,12 +60,10 @@ app.use((err, req, res, next) => {
 
 
 
-app.get('/api', (req, res) => {
-    res.send('Api is running')
-})
 
 
-app.route().post(registerUser)
+
+app.route('/api/register').post(registerUser)
 
 
 app.route('/api/login').post(loginUser)
