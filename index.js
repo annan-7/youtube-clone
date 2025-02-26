@@ -34,9 +34,12 @@ app.use(express.static("public"));
 app.use(cookieParser())
 
 connectDB().then(()=>{
-    app.listen(port, ()=>{
-        console.log(`server at http://localhost:${port}`)
-    })
+    if(process.env.NODE_ENV !== "production"){
+        app.listen(port, ()=>{
+            console.log(`server at http://localhost:${port}`)
+        })
+    }
+    
 })
 .catch((err)=> console.log(err))
 
@@ -48,12 +51,9 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal Server Error' });
 });
 
-app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    next();
-});
 
-app.get('/api', (req, res) => {
+
+app.get('/api/port', (req, res) => {
     console.log(process.env.PORT)
 })
 
@@ -110,4 +110,4 @@ app.route('/api/UploadvideoQuality').post(
 app.route('/api/get-video-quality').get(GetVideoQuality)
 
 
-
+export default app;
