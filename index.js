@@ -64,7 +64,10 @@ app.get('/api', (req, res) => {
 
 
 //app.route().post(registerUser)
-app.post('/api/register', registerUser)
+//app.post('/api/register', registerUser)
+app.post('/api/register', (req, res)=>{
+    res.status(200).json({ success: "Test route works!" });
+})
 
 app.route('/api/login').post(loginUser)
 
