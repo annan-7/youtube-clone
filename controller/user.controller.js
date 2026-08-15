@@ -177,5 +177,41 @@ const profile = asyncHandler(async(req, res)=>{
         new ApiResponse(200, user, "User profile fetched successfully")
     )
 })
+const serverhealth= asyncHandler(async(req,res)=>{
+    return res.status(200).json(
+        new ApiResponse(200,{}, "server is working")    )
+})
 
-export {registerUser, loginUser, GenerateAccessandRefreshTokens, LogOut, Session, NoSession,profile}
+const DeleteUser= asyncHandler(async(req, res)=>{
+    const userId = req.user?._id;
+
+    if(!userId){
+        throw new ApiError(401, "please login to delete account")
+    }
+    const user = await User.findByIdAndDelete(userId)
+    if(!user){
+        throw new ApiError(404,"User not found")
+    }
+    const options = {
+        httpOnly: true,
+    };
+
+    return res.status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(
+        new ApiResponse(200,{}, "User account has been deleted successfully")
+    )
+})
+
+const subscribeToChannel = asyncHandler(async(req, res)=>{
+    const channelId = req.params.channelId;
+
+    if(!channelId){
+        throw new ApiError(400, "Channel Id is required to subcribe")
+    }
+
+    
+
+})
+export {serverhealth,registerUser, loginUser, GenerateAccessandRefreshTokens, LogOut, Session, NoSession,profile,DeleteUser}
